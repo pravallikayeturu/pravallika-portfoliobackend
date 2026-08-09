@@ -1,4 +1,3 @@
-
 package com.ypravallika.pravallikaportfolio.service;
 
 import java.util.HashMap;
@@ -18,109 +17,114 @@ import com.ypravallika.pravallikaportfolio.model.ContactMessage;
 @Service
 public class EmailService {
 
-    @Value("${resend.api.key}")
-    private String resendApiKey;
+@Value("${resend.api.key}")
+private String resendApiKey;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public void sendEmail(ContactMessage contact) {
+public void sendEmail(ContactMessage contact) {
 
-        String url = "https://api.resend.com/emails";
+    String url = "https://api.resend.com/emails";
 
-        try {
+    try {
 
-            RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(resendApiKey);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(resendApiKey);
 
-            Map<String, Object> emailData = new HashMap<>();
+        Map<String, Object> emailData = new HashMap<>();
 
-            emailData.put("from", "onboarding@resend.dev");
-            emailData.put("to", new String[]{"yeturupravallika94@gmail.com"});
-            emailData.put(
-                    "subject",
-                    "New Portfolio Contact: " + contact.getSubject()
-            );
+        emailData.put("from", "onboarding@resend.dev");
+        emailData.put(
+                "to",
+                new String[]{"yeturupravallika94@gmail.com"}
+        );
 
-            String html = """
-                    <h2>New Portfolio Contact</h2>
-                    <p><strong>Name:</strong> %s</p>
-                    <p><strong>Email:</strong> %s</p>
-                    <p><strong>Subject:</strong> %s</p>
-                    <p><strong>Message:</strong> %s</p>
-                    """.formatted(
-                            escapeHtml(contact.getName()),
-                            escapeHtml(contact.getEmail()),
-                            escapeHtml(contact.getSubject()),
-                            escapeHtml(contact.getMessage())
-                    );
+        emailData.put(
+                "subject",
+                "New Portfolio Contact: " + contact.getSubject()
+        );
 
-            emailData.put("html", html);
+        String html = """
+                <h2>New Portfolio Contact</h2>
+                <p><strong>Name:</strong> %s</p>
+                <p><strong>Email:</strong> %s</p>
+                <p><strong>Subject:</strong> %s</p>
+                <p><strong>Message:</strong> %s</p>
+                """.formatted(
+                        escapeHtml(contact.getName()),
+                        escapeHtml(contact.getEmail()),
+                        escapeHtml(contact.getSubject()),
+                        escapeHtml(contact.getMessage())
+                );
 
-            String body = objectMapper.writeValueAsString(emailData);
+        emailData.put("html", html);
 
-            System.out.println("========== RESEND REQUEST ==========");
-            System.out.println("Request JSON: " + body);
-            System.out.println("API KEY PRESENT: " +
-                    (resendApiKey != null && !resendApiKey.isBlank()));
-            System.out.println("====================================");
+        String body = objectMapper.writeValueAsString(emailData);
 
-            HttpEntity<String> request =
-                    new HttpEntity<>(body, headers);
+        HttpEntity<String> request =
+                new HttpEntity<>(body, headers);
 
-            String response = restTemplate.postForObject(
-                    url,
-                    request,
-                    String.class
-            );
+        String response = restTemplate.postForObject(
+                url,
+                request,
+                String.class
+        );
 
-            System.out.println("==================================");
-            System.out.println("EMAIL SENT SUCCESSFULLY USING RESEND");
-            System.out.println("Resend Response: " + response);
-            System.out.println("==================================");
+        System.out.println("==================================");
+        System.out.println("EMAIL SENT SUCCESSFULLY USING RESEND");
+        System.out.println("Resend Response: " + response);
+        System.out.println("==================================");
 
-        } catch (HttpClientErrorException e) {
+    } catch (HttpClientErrorException e) {
 
-            System.out.println("==================================");
-            System.out.println("RESEND HTTP ERROR");
-            System.out.println("Status: " + e.getStatusCode());
-            System.out.println("Response Body: " + e.getResponseBodyAsString());
-            System.out.println("==================================");
+        System.out.println("==================================");
+        System.out.println("RESEND HTTP ERROR");
+        System.out.println("STATUS CODE: " + e.getStatusCode().value());
+        System.out.println("STATUS TEXT: " + e.getStatusText());
+        System.out.println(
+                "RESPONSE BODY: " + e.getResponseBodyAsString()
+        );
+        System.out.println("==================================");
 
-            throw new RuntimeException(
-                    "Failed to send email using Resend",
-                    e
-            );
+        throw new RuntimeException(
+                "Failed to send email using Resend",
+                e
+        );
 
-        } catch (HttpClientErrorException e) {
+    } catch (Exception e) {
 
-    System.out.println("==================================");
-    System.out.println("RESEND HTTP ERROR");
-    System.out.println("STATUS CODE: " + e.getStatusCode().value());
-    System.out.println("STATUS TEXT: " + e.getStatusText());
-    System.out.println("RESPONSE BODY: " + e.getResponseBodyAsString());
-    System.out.println("==================================");
+        System.out.println("==================================");
+        System.out.println("RESEND EMAIL ERROR");
+        System.out.println(
+                "Exception: " + e.getClass().getName()
+        );
+        System.out.println("Message: " + e.getMessage());
+        e.printStackTrace();
+        System.out.println("==================================");
 
-    throw new RuntimeException(
-            "Failed to send email using Resend",
-            e
-    );
+        throw new RuntimeException(
+                "Failed to send email using Resend",
+                e
+        );
+    }
 }
+
+private String escapeHtml(String text) {
+
+    if (text == null) {
+        return "";
     }
 
-    private String escapeHtml(String text) {
+    return text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#39;");
+}
 
-        if (text == null) {
-            return "";
-        }
 
-        return text
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
-    }
 }
