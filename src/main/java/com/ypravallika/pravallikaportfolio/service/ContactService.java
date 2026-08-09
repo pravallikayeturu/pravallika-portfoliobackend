@@ -19,7 +19,6 @@ public class ContactService {
 
         repo.save(contact);
 
-        emailService.sendEmail(contact);
 
     }
 }
