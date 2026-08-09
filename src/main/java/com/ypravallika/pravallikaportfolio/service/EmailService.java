@@ -9,6 +9,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,33 +61,53 @@ public class EmailService {
 
             String body = objectMapper.writeValueAsString(emailData);
 
+            System.out.println("========== RESEND REQUEST ==========");
+            System.out.println("Request JSON: " + body);
+            System.out.println("API KEY PRESENT: " +
+                    (resendApiKey != null && !resendApiKey.isBlank()));
+            System.out.println("====================================");
+
             HttpEntity<String> request =
                     new HttpEntity<>(body, headers);
 
-            restTemplate.postForEntity(
+            String response = restTemplate.postForObject(
                     url,
                     request,
                     String.class
             );
 
             System.out.println("==================================");
-            System.out.println("Email sent successfully using Resend!");
+            System.out.println("EMAIL SENT SUCCESSFULLY USING RESEND");
+            System.out.println("Resend Response: " + response);
             System.out.println("==================================");
+
+        } catch (HttpClientErrorException e) {
+
+            System.out.println("==================================");
+            System.out.println("RESEND HTTP ERROR");
+            System.out.println("Status: " + e.getStatusCode());
+            System.out.println("Response Body: " + e.getResponseBodyAsString());
+            System.out.println("==================================");
+
+            throw new RuntimeException(
+                    "Failed to send email using Resend",
+                    e
+            );
 
         } catch (Exception e) {
 
-    System.out.println("==================================");
-    System.out.println("RESEND EMAIL ERROR");
-    System.out.println("Exception: " + e.getClass().getName());
-    System.out.println("Message: " + e.getMessage());
-    e.printStackTrace();
-    System.out.println("==================================");
+            System.out.println("==================================");
+            System.out.println("RESEND EMAIL ERROR");
+            System.out.println("Exception: " + e.getClass().getName());
+            System.out.println("Message: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("==================================");
 
-    throw new RuntimeException(
-            "Failed to send email using Resend",
-            e
-    );
-}
+            throw new RuntimeException(
+                    "Failed to send email using Resend",
+                    e
+            );
+        }
     }
 
     private String escapeHtml(String text) {
