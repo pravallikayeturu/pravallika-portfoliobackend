@@ -94,20 +94,20 @@ public class EmailService {
                     e
             );
 
-        } catch (Exception e) {
+        } catch (HttpClientErrorException e) {
 
-            System.out.println("==================================");
-            System.out.println("RESEND EMAIL ERROR");
-            System.out.println("Exception: " + e.getClass().getName());
-            System.out.println("Message: " + e.getMessage());
-            e.printStackTrace();
-            System.out.println("==================================");
+    System.out.println("==================================");
+    System.out.println("RESEND HTTP ERROR");
+    System.out.println("STATUS CODE: " + e.getStatusCode().value());
+    System.out.println("STATUS TEXT: " + e.getStatusText());
+    System.out.println("RESPONSE BODY: " + e.getResponseBodyAsString());
+    System.out.println("==================================");
 
-            throw new RuntimeException(
-                    "Failed to send email using Resend",
-                    e
-            );
-        }
+    throw new RuntimeException(
+            "Failed to send email using Resend",
+            e
+    );
+}
     }
 
     private String escapeHtml(String text) {
