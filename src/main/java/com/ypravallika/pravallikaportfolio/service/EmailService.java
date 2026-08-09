@@ -1,50 +1,53 @@
+
 package com.ypravallika.pravallikaportfolio.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.SendEmailRequest;
 import com.ypravallika.pravallikaportfolio.model.ContactMessage;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    @Value("${RESEND_API_KEY}")
+    private String resendApiKey;
 
     public void sendEmail(ContactMessage contact) {
 
-        // Check what Spring is reading
-        System.out.println("==================================");
-        System.out.println("FROM EMAIL : " + fromEmail);
-        System.out.println("==================================");
+        try {
+            Resend resend = new Resend(resendApiKey);
 
-        SimpleMailMessage message = new SimpleMailMessage();
+            SendEmailRequest request = SendEmailRequest.builder()
+                    .from("onboarding@resend.dev")
+                    .to("yeturupravallika94@gmail.com")
+                    .subject("New Portfolio Contact: " + contact.getSubject())
+                    .html(
+                            "<h2>New Portfolio Contact</h2>" +
+                            "<p><strong>Name:</strong> " + contact.getName() + "</p>" +
+                            "<p><strong>Email:</strong> " + contact.getEmail() + "</p>" +
+                            "<p><strong>Subject:</strong> " + contact.getSubject() + "</p>" +
+                            "<p><strong>Message:</strong></p>" +
+                            "<p>" + contact.getMessage() + "</p>"
+                    )
+                    .build();
 
-        // Sender
-        message.setFrom(fromEmail);
+            resend.emails().send(request);
 
-        // Receiver (your email)
-        message.setTo("yeturupravallika94@gmail.com");
+            System.out.println("==================================");
+            System.out.println("Email sent successfully using Resend!");
+            System.out.println("==================================");
 
-        // Subject
-        message.setSubject("New Portfolio Contact: " + contact.getSubject());
+        } catch (ResendException e) {
 
-        // Email Body
-        message.setText(
-                "Name: " + contact.getName() + "\n\n" +
-                "Email: " + contact.getEmail() + "\n\n" +
-                "Subject: " + contact.getSubject() + "\n\n" +
-                "Message:\n" + contact.getMessage());
+            System.out.println("==================================");
+            System.out.println("RESEND EMAIL ERROR");
+            System.out.println(e.getMessage());
+            System.out.println("==================================");
 
-        // Send email
-        mailSender.send(message);
-
-        System.out.println("Email sent successfully!");
+            throw new RuntimeException("Failed to send email using Resend", e);
+        }
     }
 }
