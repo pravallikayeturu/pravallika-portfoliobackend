@@ -11,7 +11,8 @@ import com.ypravallika.pravallikaportfolio.service.ContactService;
     "http://localhost:5501",
     "http://127.0.0.1:5500",
     "http://localhost:5500",
-    "https://pravallika-portfolio-three.vercel.app"
+    "https://pravallika-portfolio-three.vercel.app",
+     "https://pravallika-portfolio-aor8hmzh8-pravallika9.vercel.app"
 })
 @RestController
 @RequestMapping("/api")
