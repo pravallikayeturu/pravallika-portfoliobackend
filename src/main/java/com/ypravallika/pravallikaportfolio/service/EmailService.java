@@ -5,19 +5,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.resend.Resend;
-import com.resend.core.exception.ResendException;
-import com.resend.services.emails.model.SendEmailRequest;
+import com.resend.ResendException;
+import com.resend.SendEmailRequest;
+import com.resend.SendEmailResponse;
+
 import com.ypravallika.pravallikaportfolio.model.ContactMessage;
 
 @Service
 public class EmailService {
 
-    @Value("${RESEND_API_KEY}")
+    @Value("${resend.api.key}")
     private String resendApiKey;
 
     public void sendEmail(ContactMessage contact) {
 
         try {
+
             Resend resend = new Resend(resendApiKey);
 
             SendEmailRequest request = SendEmailRequest.builder()
@@ -34,10 +37,11 @@ public class EmailService {
                     )
                     .build();
 
-            resend.emails().send(request);
+            SendEmailResponse response = resend.emails().send(request);
 
             System.out.println("==================================");
             System.out.println("Email sent successfully using Resend!");
+            System.out.println("Email ID: " + response.getId());
             System.out.println("==================================");
 
         } catch (ResendException e) {
