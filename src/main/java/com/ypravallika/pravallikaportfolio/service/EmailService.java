@@ -1,4 +1,4 @@
-```java
+
 package com.ypravallika.pravallikaportfolio.service;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -57,4 +57,3 @@ public class EmailService {
         }
     }
 }
-```
