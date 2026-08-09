@@ -2,12 +2,11 @@
 package com.ypravallika.pravallikaportfolio.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-
-import com.resend.Resend;
-import com.resend.ResendException;
-import com.resend.CreateEmailOptions;
-import com.resend.CreateEmailResponse;
+import org.springframework.web.client.RestTemplate;
 
 import com.ypravallika.pravallikaportfolio.model.ContactMessage;
 
@@ -19,32 +18,44 @@ public class EmailService {
 
     public void sendEmail(ContactMessage contact) {
 
+        String url = "https://api.resend.com/emails";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(resendApiKey);
+
+        String body = """
+                {
+                    "from": "onboarding@resend.dev",
+                    "to": ["yeturupravallika94@gmail.com"],
+                    "subject": "New Portfolio Contact: %s",
+                    "html": "<h2>New Portfolio Contact</h2><p><strong>Name:</strong> %s</p><p><strong>Email:</strong> %s</p><p><strong>Subject:</strong> %s</p><p><strong>Message:</strong> %s</p>"
+                }
+                """.formatted(
+                    contact.getSubject(),
+                    contact.getName(),
+                    contact.getEmail(),
+                    contact.getSubject(),
+                    contact.getMessage()
+                );
+
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+
         try {
 
-            Resend resend = new Resend(resendApiKey);
-
-            CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from("onboarding@resend.dev")
-                    .to("yeturupravallika94@gmail.com")
-                    .subject("New Portfolio Contact: " + contact.getSubject())
-                    .html(
-                            "<h2>New Portfolio Contact</h2>" +
-                            "<p><strong>Name:</strong> " + contact.getName() + "</p>" +
-                            "<p><strong>Email:</strong> " + contact.getEmail() + "</p>" +
-                            "<p><strong>Subject:</strong> " + contact.getSubject() + "</p>" +
-                            "<p><strong>Message:</strong></p>" +
-                            "<p>" + contact.getMessage() + "</p>"
-                    )
-                    .build();
-
-            CreateEmailResponse response = resend.emails().send(params);
+            restTemplate.postForEntity(
+                    url,
+                    request,
+                    String.class
+            );
 
             System.out.println("==================================");
             System.out.println("Email sent successfully using Resend!");
-            System.out.println("Email ID: " + response.getId());
             System.out.println("==================================");
 
-        } catch (ResendException e) {
+        } catch (Exception e) {
 
             System.out.println("==================================");
             System.out.println("RESEND EMAIL ERROR");
@@ -52,7 +63,8 @@ public class EmailService {
             System.out.println("==================================");
 
             throw new RuntimeException(
-                    "Failed to send email using Resend", e
+                    "Failed to send email using Resend",
+                    e
             );
         }
     }
