@@ -75,16 +75,18 @@ public class EmailService {
 
         } catch (Exception e) {
 
-            System.out.println("==================================");
-            System.out.println("RESEND EMAIL ERROR");
-            System.out.println(e.getMessage());
-            System.out.println("==================================");
+    System.out.println("==================================");
+    System.out.println("RESEND EMAIL ERROR");
+    System.out.println("Exception: " + e.getClass().getName());
+    System.out.println("Message: " + e.getMessage());
+    e.printStackTrace();
+    System.out.println("==================================");
 
-            throw new RuntimeException(
-                    "Failed to send email using Resend",
-                    e
-            );
-        }
+    throw new RuntimeException(
+            "Failed to send email using Resend",
+            e
+    );
+}
     }
 
     private String escapeHtml(String text) {
