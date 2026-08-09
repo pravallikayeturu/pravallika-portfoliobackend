@@ -1,4 +1,4 @@
-
+```java
 package com.ypravallika.pravallikaportfolio.service;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 
 import com.resend.Resend;
 import com.resend.ResendException;
-import com.resend.SendEmailRequest;
-import com.resend.SendEmailResponse;
+import com.resend.CreateEmailOptions;
+import com.resend.CreateEmailResponse;
 
 import com.ypravallika.pravallikaportfolio.model.ContactMessage;
 
@@ -23,7 +23,7 @@ public class EmailService {
 
             Resend resend = new Resend(resendApiKey);
 
-            SendEmailRequest request = SendEmailRequest.builder()
+            CreateEmailOptions params = CreateEmailOptions.builder()
                     .from("onboarding@resend.dev")
                     .to("yeturupravallika94@gmail.com")
                     .subject("New Portfolio Contact: " + contact.getSubject())
@@ -37,7 +37,7 @@ public class EmailService {
                     )
                     .build();
 
-            SendEmailResponse response = resend.emails().send(request);
+            CreateEmailResponse response = resend.emails().send(params);
 
             System.out.println("==================================");
             System.out.println("Email sent successfully using Resend!");
@@ -51,7 +51,10 @@ public class EmailService {
             System.out.println(e.getMessage());
             System.out.println("==================================");
 
-            throw new RuntimeException("Failed to send email using Resend", e);
+            throw new RuntimeException(
+                    "Failed to send email using Resend", e
+            );
         }
     }
 }
+```
